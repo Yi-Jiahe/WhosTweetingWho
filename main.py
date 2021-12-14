@@ -1,4 +1,5 @@
 import os
+import time
 
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
@@ -52,11 +53,16 @@ if __name__ == '__main__':
     es = Elasticsearch(os.getenv("ELASTICSEARCH_HOST"),
                        http_auth=(os.getenv("ELASTICSEARCH_USERNAME"), os.getenv("ELASTICSEARCH_PASSWORD")))
 
-    for tweet in api.subscribe_to_filtered_stream():
-        print(tweet)
+    while True:
+        for tweet in api.subscribe_to_filtered_stream():
+            print(tweet)
 
-        doc = prepare_doc_from_tweet(tweet)
+            doc = prepare_doc_from_tweet(tweet)
 
-        res = es.index(index="holo-tweets", id=tweet['data']['id'], document=doc)
-        print(res['result'])
+            res = es.index(index="holo-tweets", id=tweet['data']['id'], document=doc)
+            print(res['result'])
+
+        sleep_time = 30
+        print(f"Disconnected from stream. Retrying in {sleep_time} seconds...")
+        time.sleep(sleep_time)
 
