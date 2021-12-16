@@ -76,10 +76,15 @@ class Twitter:
     def subscribe_to_filtered_stream(self):
         url = f"{base_url}/2/tweets/search/stream"
         headers = {'Authorization': f'Bearer {self.bearer_token}'}
+        params = {
+            'expansions': ','.join(['author_id', 'entities.mentions.username', 'in_reply_to_user_id', 'referenced_tweets.id', 'referenced_tweets.id.author_id']),
+            'tweet.fields': ','.join(['conversation_id', 'created_at', 'referenced_tweets', 'text']),
+            'user.fields': ','.join(['id', 'name', 'username'])
+        }
 
         s = requests.Session()
 
-        req = requests.Request("GET", url, headers=headers).prepare()
+        req = requests.Request("GET", url, headers=headers, params=params).prepare()
         resp = s.send(req, stream=True)
 
         for line in resp.iter_lines():
@@ -87,7 +92,7 @@ class Twitter:
                 tweet = json.loads(line)
                 try:
                     tweet_id = tweet['data']['id']
-                    yield self.get_tweet_details(tweet_id)
+                    yield tweet
                 except:
                     print(tweet)
 
