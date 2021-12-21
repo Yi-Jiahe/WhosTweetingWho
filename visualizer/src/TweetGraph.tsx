@@ -2,7 +2,8 @@ import React from 'react';
 import * as d3 from 'd3';
 
 import { stringToColour } from './Utils';
-import { type } from 'os';
+
+import './TweetGraph.css';
 
 type Tweet = Readonly<{
   id: string,
@@ -48,16 +49,8 @@ const TweetGraph = ({}: TweetGraphProps) => {
       .catch();
   }, [])
 
-  const onClickTweet = (event: any, d: any) => {
-    console.log(event);
-    console.log(d);
-    window.location.href = `https://twitter.com/username/status/${d.data.id}`;
-  }
-
   React.useEffect(() => {
-    const svgEl = d3.select(svgRef.current);
-    svgEl.selectAll("*").remove(); // Clear svg content before adding new elements 
-    const svg = svgEl;
+    const svg = d3.select(svgRef.current);
 
     const onMouseOverTweet = (event: any, d: any) => {
       svg.append("text")
@@ -77,31 +70,54 @@ const TweetGraph = ({}: TweetGraphProps) => {
       console.log(groupedData);
 
       const hierarchialData = {
-        children: Array.from(groupedData, ([, children]) => ({ children }))
+        children: Array.from(groupedData, ([key, children]) => ({ username:key, children: children }))
       }
       console.log(hierarchialData);
 
-      const root = d3.pack()
-        .size([500, 500])
-        .padding(1)
+      const root:d3.HierarchyCircularNode<any> = d3.pack()
+        .size([1000, 1000])
+        .padding(100)
         (d3.hierarchy(hierarchialData).count());
       console.log(root);
 
-      // const users = root.descendants().filter(d => d.children);
+      const users = root.descendants().filter(d => d.height === 1);
+      console.log("Users:");
+      console.log(users);
 
       const tweets: d3.HierarchyCircularNode<any>[] = root.leaves();
 
-      svg.selectAll('.tweet-circle')
-        .data(tweets)
-        .enter()
-        .append('circle')
+      const usercircle = svg.selectAll('user-circle')
+        .data(users)
+        .join("g")
+      
+      usercircle.append('circle')
         .attr("cx", d => d.x)
         .attr("cy", d => d.y)
-        .attr("r", 10)
-        .attr("fill", d => stringToColour(d.data.author_username))
-        .on("mouseover", onMouseOverTweet)
-        .on("mouseout", onMouseOutTweet)
-        .on("click", onClickTweet);
+        .attr("r", d => d.r)
+        .attr("fill", d => stringToColour(d.data.username))
+        .attr("fill-opacity", 0.1)
+        .attr("r", d => d.r);
+      usercircle.append("title")
+        .text(d => `@${d.data.username}`);
+      usercircle.append("text")
+        .text(d => `@${d.data.username}`)
+        .attr("class", "username-title")
+        .attr("transform", d => `translate(${(d.x)}, ${(d.y - (d.r))})`)
+        .attr("dy", "-0.25em");
+
+      const tweetcircle = usercircle.selectAll("a")
+        .data(tweets)
+        .join("a")
+          .attr("xlink:href", d => `https://twitter.com/username/status/${d.data.id}`)
+          .attr("target", "_blank")
+          // .attr("transform", d => `translate(${d.x},${d.y})`);
+      tweetcircle.append('circle')
+          .attr("cx", d => d.x)
+          .attr("cy", d => d.y)
+          .attr("r", 10)
+          .attr("fill", d => stringToColour(d.data.author_username))
+          .on("mouseover", onMouseOverTweet)
+          .on("mouseout", onMouseOutTweet);
     }
   }, [data])
 

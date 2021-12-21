@@ -2,5 +2,8 @@ secrets/
 .env
 
 .idea/
+__pycache__/
+
+.pytest_cache/
 
 r_hololive.html
