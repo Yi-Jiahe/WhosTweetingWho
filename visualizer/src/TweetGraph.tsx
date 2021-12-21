@@ -29,7 +29,14 @@ const TweetGraph = ({}: TweetGraphProps) => {
       }),
       body: JSON.stringify({
         "from": 0,
-        "size": 200,
+        "size": 500,
+        "query": {
+          "range": {
+            "timestamp": {
+              "gte": "now-12h",
+            }
+          }
+        }
       })
     })
       .then(resp => resp.body?.getReader().read()) 
@@ -75,8 +82,8 @@ const TweetGraph = ({}: TweetGraphProps) => {
       console.log(hierarchialData);
 
       const root:d3.HierarchyCircularNode<any> = d3.pack()
-        .size([1000, 1000])
-        .padding(100)
+        .size([1500, 1500])
+        .padding(200)
         (d3.hierarchy(hierarchialData).count());
       console.log(root);
 
@@ -86,31 +93,30 @@ const TweetGraph = ({}: TweetGraphProps) => {
 
       const tweets: d3.HierarchyCircularNode<any>[] = root.leaves();
 
-      const usercircle = svg.selectAll('user-circle')
+      const userGroup = svg.selectAll('user-circle')
         .data(users)
         .join("g")
       
-      usercircle.append('circle')
+      userGroup.append('circle')
         .attr("cx", d => d.x)
         .attr("cy", d => d.y)
         .attr("r", d => d.r)
         .attr("fill", d => stringToColour(d.data.username))
         .attr("fill-opacity", 0.1)
         .attr("r", d => d.r);
-      usercircle.append("title")
+      userGroup.append("title")
         .text(d => `@${d.data.username}`);
-      usercircle.append("text")
+      userGroup.append("text")
         .text(d => `@${d.data.username}`)
         .attr("class", "username-title")
         .attr("transform", d => `translate(${(d.x)}, ${(d.y - (d.r))})`)
         .attr("dy", "-0.25em");
 
-      const tweetcircle = usercircle.selectAll("a")
+      const tweetcircle = userGroup.selectAll("a")
         .data(tweets)
         .join("a")
           .attr("xlink:href", d => `https://twitter.com/username/status/${d.data.id}`)
           .attr("target", "_blank")
-          // .attr("transform", d => `translate(${d.x},${d.y})`);
       tweetcircle.append('circle')
           .attr("cx", d => d.x)
           .attr("cy", d => d.y)
