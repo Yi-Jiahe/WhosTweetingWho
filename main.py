@@ -59,8 +59,8 @@ if __name__ == '__main__':
 
             doc = prepare_doc_from_tweet(tweet)
 
-            # res = es.index(index="holo-tweets", id=tweet['data']['id'], document=doc)
-            # print(res['result'])
+            res = es.index(index="holo-tweets", id=tweet['data']['id'], document=doc)
+            print(res['result'])
 
         sleep_time = 30
         print(f"Disconnected from stream. Retrying in {sleep_time} seconds...")
