@@ -2,11 +2,16 @@ import { ChangeEvent } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import './App.css';
 import { TweetGraph } from './TweetGraph';
+import { ForceGraph } from './ForceGraph';
 
 const routes = [
   {
     path: '/',
     component: TweetGraph
+  },
+  {
+    path: '/force-graph',
+    component: ForceGraph
   }
 ]
 
@@ -44,4 +49,3 @@ function App() {
 }
 
 export default App;
-       
